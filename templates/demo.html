@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3><i class="fas fa-play-circle"></i> Try Demo with Sample Dataset</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- Sample Job Selection -->
+                        <div class="mb-4">
+                            <label class="form-label"><strong>Sample Job Descriptions</strong></label>
+                            <div class="list-group">
+                                {% for job_title, job_desc in sample_jobs.items() %}
+                                <button type="button" class="list-group-item list-group-item-action" 
+                                        onclick="document.getElementById('job_description').value = '{{ job_desc }}'">
+                                    <strong>{{ job_title }}</strong>
+                                    <p class="mb-0 text-muted small">{{ job_desc[:100] }}...</p>
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Job Description -->
+                        <div class="mb-4">
+                            <label for="job_description" class="form-label">
+                                <strong>Job Description</strong>
+                            </label>
+                            <textarea class="form-control" id="job_description" name="job_description" 
+                                      rows="5" required></textarea>
+                        </div>
+
+                        <!-- Requirements -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="required_experience" class="form-label">
+                                    <strong>Required Experience (years)</strong>
+                                </label>
+                                <input type="number" class="form-control" id="required_experience" 
+                                       name="required_experience" value="2">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="required_education" class="form-label">
+                                    <strong>Required Education</strong>
+                                </label>
+                                <input type="text" class="form-control" id="required_education" 
+                                       name="required_education" value="Bachelor's degree">
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-search"></i> Run Demo Screening
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -71,9 +71,9 @@ class ResumeRanker:
         # Calculate other scores
         scores_data = []
         
-        for idx, row in resumes_df.iterrows():
-            # Semantic similarity score
-            semantic_score = semantic_scores[idx]
+        for position, (idx, row) in enumerate(resumes_df.iterrows()):
+            # Semantic similarity score (use position instead of idx)
+            semantic_score = semantic_scores[position]
             
             # Keyword matching score
             keyword_score = self.calculate_keyword_match_score(

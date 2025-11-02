@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ total_candidates|default(0) }}</h3>
+                    <p class="mb-0">Total Candidates</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ shortlisted_count|default(0) }}</h3>
+                    <p class="mb-0">Shortlisted</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    {% if total_candidates and total_candidates > 0 %}
+                        <h3>{{ ((shortlisted_count / total_candidates) * 100)|round|int }}%</h3>
+                    {% else %}
+                        <h3>0%</h3>
+                    {% endif %}
+                    <p class="mb-0">Success Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Description -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5><i class="fas fa-briefcase"></i> Job Description</h5>
+        </div>
+        <div class="card-body">
+            <p>{{ job_description|default('No job description provided') }}</p>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h4><i class="fas fa-trophy"></i> Ranked Candidates</h4>
+        </div>
+        <div class="card-body">
+            {% if results and results|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Candidate</th>
+                            <th>Final Score</th>
+                            <th>Semantic</th>
+                            <th>Keywords</th>
+                            <th>Experience</th>
+                            <th>Education</th>
+                            <th>Skills</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr class="{% if result.get('shortlisted', False) %}table-success{% endif %}">
+                            <td><strong>#{{ result.get('rank', loop.index) }}</strong></td>
+                            <td>{{ result.get('filename', 'Unknown') }}</td>
+                            <td>
+                                {% set final_score = result.get('final_score', 0) %}
+                                <strong>{{ (final_score * 100)|round|int }}%</strong>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-primary" 
+                                         style="width: {{ (final_score * 100)|round|int }}%"></div>
+                                </div>
+                            </td>
+                            <td>{{ (result.get('semantic_score', 0) * 100)|round|int }}%</td>
+                            <td>{{ (result.get('keyword_score', 0) * 100)|round|int }}%</td>
+                            <td>{{ (result.get('experience_score', 0) * 100)|round|int }}%</td>
+                            <td>{{ (result.get('education_score', 0) * 100)|round|int }}%</td>
+                            <td>
+                                <small>
+                                    {% set skills = result.get('skills', []) %}
+                                    {% if skills and skills is not string and skills|length > 0 %}
+                                        {% for skill in skills[:5] %}
+                                            <span class="badge bg-secondary">{{ skill }}</span>
+                                        {% endfor %}
+                                        {% if skills|length > 5 %}
+                                            <span class="badge bg-light text-dark">+{{ skills|length - 5 }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                {% if result.get('shortlisted', False) %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Shortlisted
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-times-circle"></i> Not Selected
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle"></i> No results to display
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 text-center">
+        <a href="/upload" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Screen More Candidates
+        </a>
+        <a href="/" class="btn btn-secondary">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}

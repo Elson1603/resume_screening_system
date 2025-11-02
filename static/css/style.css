@@ -1,0 +1,43 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.hero-section h1 {
+    font-weight: bold;
+}
+
+.card {
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.progress {
+    margin-top: 5px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    margin: 2px;
+}
+
+footer {
+    margin-top: auto;
+}
