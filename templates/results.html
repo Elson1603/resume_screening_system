@@ -76,7 +76,7 @@
                                 <strong>{{ (final_score * 100)|round|int }}%</strong>
                                 <div class="progress" style="height: 5px;">
                                     <div class="progress-bar bg-primary" 
-                                         style="width: {{ (final_score * 100)|round|int }}%"></div>
+                                         style="width: {{ (final_score * 100) | round|int }}%"></div>
                                 </div>
                             </td>
                             <td>{{ (result.get('semantic_score', 0) * 100)|round|int }}%</td>

@@ -2,10 +2,12 @@ import torch
 import torch.nn as nn
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, precision_recall_fscore_support
 import numpy as np
 from src.config import Config
 import os
+import json
+from datetime import datetime
 
 class ResumeClassifier(nn.Module):
     """Neural network classifier for resume categorization"""
@@ -34,6 +36,12 @@ class ModelTrainer:
         self.labels = labels
         self.label_encoder = LabelEncoder()
         self.model = None
+        self.training_history = {
+            'epochs': [],
+            'train_loss': [],
+            'train_accuracy': [],
+            'test_accuracy': []
+        }
         
     def prepare_data(self):
         """Prepare training data"""
@@ -96,6 +104,12 @@ class ModelTrainer:
                 _, test_preds = torch.max(test_outputs, 1)
                 test_acc = (test_preds == y_test).float().mean()
             
+            # Store metrics
+            self.training_history['epochs'].append(epoch + 1)
+            self.training_history['train_loss'].append(loss.item())
+            self.training_history['train_accuracy'].append(train_acc.item())
+            self.training_history['test_accuracy'].append(test_acc.item())
+            
             print(f"Epoch [{epoch+1}/{Config.EPOCHS}], Loss: {loss.item():.4f}, "
                   f"Train Acc: {train_acc:.4f}, Test Acc: {test_acc:.4f}")
         
@@ -109,12 +123,27 @@ class ModelTrainer:
         y_test_cpu = y_test.cpu().numpy()
         test_preds_cpu = test_preds.cpu().numpy()
         
-        print(f"\nTest Accuracy: {accuracy_score(y_test_cpu, test_preds_cpu):.4f}")
+        # Calculate detailed metrics
+        final_accuracy = accuracy_score(y_test_cpu, test_preds_cpu)
+        precision, recall, f1, support = precision_recall_fscore_support(
+            y_test_cpu, test_preds_cpu, average='weighted'
+        )
+        
+        print(f"\nTest Accuracy: {final_accuracy:.4f}")
+        print(f"Weighted Precision: {precision:.4f}")
+        print(f"Weighted Recall: {recall:.4f}")
+        print(f"Weighted F1-Score: {f1:.4f}")
         print("\nClassification Report:")
         print(classification_report(
             y_test_cpu, test_preds_cpu,
             target_names=self.label_encoder.classes_
         ))
+        
+        # Save metrics
+        self._save_metrics(
+            y_test_cpu, test_preds_cpu, 
+            final_accuracy, precision, recall, f1
+        )
     
     def save_model(self):
         """Save trained model"""
@@ -128,3 +157,117 @@ class ModelTrainer:
         
         print(f"\nModel saved to {model_path}")
         print(f"Label encoder saved to {encoder_path}")
+    
+    def _save_metrics(self, y_test, y_pred, accuracy, precision, recall, f1):
+        """Save training metrics to JSON file"""
+        os.makedirs(Config.MODEL_DIR, exist_ok=True)
+        
+        # Get confusion matrix
+        cm = confusion_matrix(y_test, y_pred)
+        
+        # Get per-class metrics
+        class_report = classification_report(
+            y_test, y_pred,
+            target_names=self.label_encoder.classes_,
+            output_dict=True
+        )
+        
+        # Compile all metrics
+        metrics = {
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'model_config': {
+                'model_name': Config.MODEL_NAME,
+                'device': str(Config.DEVICE),
+                'batch_size': Config.BATCH_SIZE,
+                'learning_rate': Config.LEARNING_RATE,
+                'epochs': Config.EPOCHS,
+                'embedding_dim': self.embeddings.shape[1],
+                'num_classes': len(self.label_encoder.classes_),
+                'total_samples': len(self.labels),
+                'train_samples': int(len(self.labels) * 0.8),
+                'test_samples': int(len(self.labels) * 0.2)
+            },
+            'training_history': self.training_history,
+            'final_metrics': {
+                'accuracy': float(accuracy),
+                'weighted_precision': float(precision),
+                'weighted_recall': float(recall),
+                'weighted_f1_score': float(f1)
+            },
+            'per_class_metrics': class_report,
+            'confusion_matrix': cm.tolist(),
+            'class_names': self.label_encoder.classes_.tolist(),
+            'scoring_weights': {
+                'semantic': Config.SEMANTIC_WEIGHT,
+                'keyword': Config.KEYWORD_WEIGHT,
+                'experience': Config.EXPERIENCE_WEIGHT,
+                'education': Config.EDUCATION_WEIGHT
+            },
+            'shortlist_threshold': Config.SHORTLIST_THRESHOLD
+        }
+        
+        # Save to JSON
+        metrics_path = os.path.join(Config.MODEL_DIR, 'training_metrics.json')
+        with open(metrics_path, 'w') as f:
+            json.dump(metrics, f, indent=4)
+        
+        print(f"\n✅ Training metrics saved to {metrics_path}")
+        
+        # Also save a readable text report
+        report_path = os.path.join(Config.MODEL_DIR, 'training_report.txt')
+        with open(report_path, 'w') as f:
+            f.write("="*80 + "\n")
+            f.write("RESUME SCREENING SYSTEM - TRAINING REPORT\n")
+            f.write("="*80 + "\n\n")
+            f.write(f"Training Date: {metrics['timestamp']}\n")
+            f.write(f"Device: {Config.DEVICE}\n")
+            f.write(f"Model: {Config.MODEL_NAME}\n\n")
+            
+            f.write("-"*80 + "\n")
+            f.write("DATASET INFORMATION\n")
+            f.write("-"*80 + "\n")
+            f.write(f"Total Samples: {metrics['model_config']['total_samples']}\n")
+            f.write(f"Training Samples: {metrics['model_config']['train_samples']}\n")
+            f.write(f"Test Samples: {metrics['model_config']['test_samples']}\n")
+            f.write(f"Number of Classes: {metrics['model_config']['num_classes']}\n\n")
+            
+            f.write("-"*80 + "\n")
+            f.write("TRAINING CONFIGURATION\n")
+            f.write("-"*80 + "\n")
+            f.write(f"Epochs: {Config.EPOCHS}\n")
+            f.write(f"Batch Size: {Config.BATCH_SIZE}\n")
+            f.write(f"Learning Rate: {Config.LEARNING_RATE}\n")
+            f.write(f"Embedding Dimension: {metrics['model_config']['embedding_dim']}\n\n")
+            
+            f.write("-"*80 + "\n")
+            f.write("FINAL PERFORMANCE METRICS\n")
+            f.write("-"*80 + "\n")
+            f.write(f"Test Accuracy: {accuracy:.4f} ({accuracy*100:.2f}%)\n")
+            f.write(f"Weighted Precision: {precision:.4f}\n")
+            f.write(f"Weighted Recall: {recall:.4f}\n")
+            f.write(f"Weighted F1-Score: {f1:.4f}\n\n")
+            
+            f.write("-"*80 + "\n")
+            f.write("PER-CLASS PERFORMANCE\n")
+            f.write("-"*80 + "\n")
+            for class_name in self.label_encoder.classes_:
+                if class_name in class_report:
+                    cls_metrics = class_report[class_name]
+                    f.write(f"\n{class_name}:\n")
+                    f.write(f"  Precision: {cls_metrics['precision']:.4f}\n")
+                    f.write(f"  Recall: {cls_metrics['recall']:.4f}\n")
+                    f.write(f"  F1-Score: {cls_metrics['f1-score']:.4f}\n")
+                    f.write(f"  Support: {cls_metrics['support']}\n")
+            
+            f.write("\n" + "-"*80 + "\n")
+            f.write("RANKING CONFIGURATION\n")
+            f.write("-"*80 + "\n")
+            f.write(f"Semantic Weight: {Config.SEMANTIC_WEIGHT * 100}%\n")
+            f.write(f"Keyword Weight: {Config.KEYWORD_WEIGHT * 100}%\n")
+            f.write(f"Experience Weight: {Config.EXPERIENCE_WEIGHT * 100}%\n")
+            f.write(f"Education Weight: {Config.EDUCATION_WEIGHT * 100}%\n")
+            f.write(f"Shortlist Threshold: {Config.SHORTLIST_THRESHOLD * 100}%\n\n")
+            
+            f.write("="*80 + "\n")
+        
+        print(f"✅ Training report saved to {report_path}")
