@@ -8,6 +8,9 @@ from src.config import Config
 import os
 import json
 from datetime import datetime
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
 class ResumeClassifier(nn.Module):
     """Neural network classifier for resume categorization"""
@@ -139,11 +142,12 @@ class ModelTrainer:
             target_names=self.label_encoder.classes_
         ))
         
-        # Save metrics
+        # Save metrics and generate visualizations
         self._save_metrics(
             y_test_cpu, test_preds_cpu, 
             final_accuracy, precision, recall, f1
         )
+        self._generate_visualizations(y_test_cpu, test_preds_cpu)
     
     def save_model(self):
         """Save trained model"""
@@ -271,3 +275,176 @@ class ModelTrainer:
             f.write("="*80 + "\n")
         
         print(f"✅ Training report saved to {report_path}")
+    
+    def _generate_visualizations(self, y_test, y_pred):
+        """Generate training visualization plots"""
+        os.makedirs(Config.MODEL_DIR, exist_ok=True)
+        plots_dir = os.path.join(Config.MODEL_DIR, 'plots')
+        os.makedirs(plots_dir, exist_ok=True)
+        
+        # Set style
+        plt.style.use('seaborn-v0_8-darkgrid')
+        
+        # 1. Training History - Accuracy and Loss Curves
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+        
+        epochs = self.training_history['epochs']
+        
+        # Loss curve
+        ax1.plot(epochs, self.training_history['train_loss'], 'b-o', label='Training Loss', linewidth=2)
+        ax1.set_xlabel('Epoch', fontsize=12)
+        ax1.set_ylabel('Loss', fontsize=12)
+        ax1.set_title('Training Loss Curve', fontsize=14, fontweight='bold')
+        ax1.legend(fontsize=10)
+        ax1.grid(True, alpha=0.3)
+        
+        # Accuracy curves
+        ax2.plot(epochs, self.training_history['train_accuracy'], 'b-o', label='Training Accuracy', linewidth=2)
+        ax2.plot(epochs, self.training_history['test_accuracy'], 'r-s', label='Test Accuracy', linewidth=2)
+        ax2.set_xlabel('Epoch', fontsize=12)
+        ax2.set_ylabel('Accuracy', fontsize=12)
+        ax2.set_title('Training & Test Accuracy Curves', fontsize=14, fontweight='bold')
+        ax2.legend(fontsize=10)
+        ax2.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(plots_dir, 'training_curves.png'), dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"✅ Training curves saved to {plots_dir}/training_curves.png")
+        
+        # 2. Confusion Matrix Heatmap
+        cm = confusion_matrix(y_test, y_pred)
+        plt.figure(figsize=(12, 10))
+        
+        # Normalize confusion matrix
+        cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        
+        sns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap='Blues',
+                    xticklabels=self.label_encoder.classes_,
+                    yticklabels=self.label_encoder.classes_,
+                    cbar_kws={'label': 'Percentage'})
+        plt.title('Confusion Matrix (Normalized)', fontsize=16, fontweight='bold', pad=20)
+        plt.xlabel('Predicted Category', fontsize=12, fontweight='bold')
+        plt.ylabel('True Category', fontsize=12, fontweight='bold')
+        plt.xticks(rotation=45, ha='right')
+        plt.yticks(rotation=0)
+        plt.tight_layout()
+        plt.savefig(os.path.join(plots_dir, 'confusion_matrix.png'), dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"✅ Confusion matrix saved to {plots_dir}/confusion_matrix.png")
+        
+        # 3. Per-Class Performance Bar Chart
+        precision, recall, f1, support = precision_recall_fscore_support(
+            y_test, y_pred, average=None, labels=np.arange(len(self.label_encoder.classes_))
+        )
+        
+        fig, ax = plt.subplots(figsize=(14, 8))
+        x = np.arange(len(self.label_encoder.classes_))
+        width = 0.25
+        
+        bars1 = ax.bar(x - width, precision, width, label='Precision', color='#3498db')
+        bars2 = ax.bar(x, recall, width, label='Recall', color='#2ecc71')
+        bars3 = ax.bar(x + width, f1, width, label='F1-Score', color='#e74c3c')
+        
+        ax.set_xlabel('Resume Category', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Score', fontsize=12, fontweight='bold')
+        ax.set_title('Per-Class Performance Metrics', fontsize=16, fontweight='bold', pad=20)
+        ax.set_xticks(x)
+        ax.set_xticklabels(self.label_encoder.classes_, rotation=45, ha='right')
+        ax.legend(fontsize=10)
+        ax.grid(True, alpha=0.3, axis='y')
+        ax.set_ylim(0, 1.1)
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(plots_dir, 'per_class_metrics.png'), dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"✅ Per-class metrics chart saved to {plots_dir}/per_class_metrics.png")
+        
+        # 4. Class Distribution
+        unique, counts = np.unique(y_test, return_counts=True)
+        class_names = [self.label_encoder.classes_[i] for i in unique]
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        
+        # Bar chart
+        colors = plt.cm.Set3(np.linspace(0, 1, len(class_names)))
+        ax1.bar(class_names, counts, color=colors)
+        ax1.set_xlabel('Resume Category', fontsize=12, fontweight='bold')
+        ax1.set_ylabel('Number of Samples', fontsize=12, fontweight='bold')
+        ax1.set_title('Test Set Class Distribution', fontsize=14, fontweight='bold')
+        ax1.tick_params(axis='x', rotation=45)
+        for i, (name, count) in enumerate(zip(class_names, counts)):
+            ax1.text(i, count + 1, str(count), ha='center', va='bottom', fontweight='bold')
+        
+        # Pie chart
+        ax2.pie(counts, labels=class_names, autopct='%1.1f%%', colors=colors, startangle=90)
+        ax2.set_title('Test Set Distribution (%)', fontsize=14, fontweight='bold')
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(plots_dir, 'class_distribution.png'), dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"✅ Class distribution saved to {plots_dir}/class_distribution.png")
+        
+        # 5. Model Performance Summary Dashboard
+        fig = plt.figure(figsize=(16, 10))
+        gs = fig.add_gridspec(3, 3, hspace=0.3, wspace=0.3)
+        
+        # Overall metrics
+        ax1 = fig.add_subplot(gs[0, :])
+        ax1.axis('off')
+        
+        final_acc = accuracy_score(y_test, y_pred)
+        weighted_precision, weighted_recall, weighted_f1, _ = precision_recall_fscore_support(
+            y_test, y_pred, average='weighted'
+        )
+        
+        summary_text = f"""MODEL PERFORMANCE SUMMARY
+        
+Test Accuracy: {final_acc:.4f} ({final_acc*100:.2f}%)
+Weighted Precision: {weighted_precision:.4f}
+Weighted Recall: {weighted_recall:.4f}
+Weighted F1-Score: {weighted_f1:.4f}
+
+Total Test Samples: {len(y_test)}
+Number of Classes: {len(self.label_encoder.classes_)}
+Device: {Config.DEVICE}
+Model: {Config.MODEL_NAME}
+        """
+        ax1.text(0.5, 0.5, summary_text, transform=ax1.transAxes,
+                fontsize=12, verticalalignment='center', horizontalalignment='center',
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+                family='monospace', fontweight='bold')
+        
+        # Mini confusion matrix
+        ax2 = fig.add_subplot(gs[1:, :2])
+        sns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap='Blues',
+                    xticklabels=self.label_encoder.classes_,
+                    yticklabels=self.label_encoder.classes_,
+                    ax=ax2, cbar_kws={'label': 'Percentage'})
+        ax2.set_title('Confusion Matrix', fontsize=12, fontweight='bold')
+        ax2.set_xlabel('Predicted', fontsize=10)
+        ax2.set_ylabel('True', fontsize=10)
+        ax2.tick_params(axis='x', rotation=45)
+        
+        # Training curves mini
+        ax3 = fig.add_subplot(gs[1, 2])
+        ax3.plot(epochs, self.training_history['train_loss'], 'b-o', linewidth=2)
+        ax3.set_title('Training Loss', fontsize=10, fontweight='bold')
+        ax3.set_xlabel('Epoch', fontsize=9)
+        ax3.set_ylabel('Loss', fontsize=9)
+        ax3.grid(True, alpha=0.3)
+        
+        ax4 = fig.add_subplot(gs[2, 2])
+        ax4.plot(epochs, self.training_history['test_accuracy'], 'r-s', linewidth=2)
+        ax4.set_title('Test Accuracy', fontsize=10, fontweight='bold')
+        ax4.set_xlabel('Epoch', fontsize=9)
+        ax4.set_ylabel('Accuracy', fontsize=9)
+        ax4.grid(True, alpha=0.3)
+        
+        plt.suptitle('Resume Screening Model - Performance Dashboard', 
+                    fontsize=18, fontweight='bold', y=0.995)
+        plt.savefig(os.path.join(plots_dir, 'performance_dashboard.png'), dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"✅ Performance dashboard saved to {plots_dir}/performance_dashboard.png")
+        
+        print(f"\n🎉 All visualizations generated successfully in {plots_dir}/")

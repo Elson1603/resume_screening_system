@@ -1,0 +1,196 @@
+================================================================================
+RESUME SCREENING SYSTEM - TRAINING REPORT
+================================================================================
+
+Training Date: 2025-11-14 01:20:04
+Device: cuda
+Model: sentence-transformers/all-MiniLM-L6-v2
+
+--------------------------------------------------------------------------------
+DATASET INFORMATION
+--------------------------------------------------------------------------------
+Total Samples: 166
+Training Samples: 132
+Test Samples: 33
+Number of Classes: 25
+
+--------------------------------------------------------------------------------
+TRAINING CONFIGURATION
+--------------------------------------------------------------------------------
+Epochs: 10
+Batch Size: 32
+Learning Rate: 2e-05
+Embedding Dimension: 384
+
+--------------------------------------------------------------------------------
+FINAL PERFORMANCE METRICS
+--------------------------------------------------------------------------------
+Test Accuracy: 0.0588 (5.88%)
+Weighted Precision: 0.0035
+Weighted Recall: 0.0588
+Weighted F1-Score: 0.0065
+
+--------------------------------------------------------------------------------
+PER-CLASS PERFORMANCE
+--------------------------------------------------------------------------------
+
+Advocate:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 2.0
+
+Arts:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Automation Testing:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Blockchain:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Business Analyst:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Civil Engineer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Data Science:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 2.0
+
+Database:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 2.0
+
+DevOps Engineer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+DotNet Developer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 2.0
+
+ETL Developer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Electrical Engineering:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+HR:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 2.0
+
+Hadoop:
+  Precision: 0.0588
+  Recall: 1.0000
+  F1-Score: 0.1111
+  Support: 2.0
+
+Health and fitness:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Java Developer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 3.0
+
+Mechanical Engineer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Network Security Engineer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Operations Manager:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+PMO:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Python Developer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+SAP Developer:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Sales:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+Testing:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 2.0
+
+Web Designing:
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-Score: 0.0000
+  Support: 1.0
+
+--------------------------------------------------------------------------------
+RANKING CONFIGURATION
+--------------------------------------------------------------------------------
+Semantic Weight: 70.0%
+Keyword Weight: 15.0%
+Experience Weight: 10.0%
+Education Weight: 5.0%
+Shortlist Threshold: 65.0%
+
+================================================================================
