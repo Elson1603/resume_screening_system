@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from src.feature_extraction import FeatureExtractor
-from src.utils import TextCleaner
+from traning.feature_extraction import FeatureExtractor
+from inference.utils import TextCleaner
 from src.config import Config
 
 class ResumeRanker:

@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.utils import TextCleaner
+from inference.utils import TextCleaner
 from src.config import Config
 import os
 

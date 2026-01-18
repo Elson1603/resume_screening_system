@@ -3,9 +3,9 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.config import Config
-from src.data_preprocessing import DataPreprocessor
-from src.feature_extraction import FeatureExtractor
-from src.model_training import ModelTrainer
+from traning.data_preprocessing import DataPreprocessor
+from traning.feature_extraction import FeatureExtractor
+from traning.model_training import ModelTrainer
 import torch
 
 def main():
