@@ -10,8 +10,8 @@ import PyPDF2
 from docx import Document
 
 from src.config import Config
-from inference.resume_ranking import ResumeRanker
-from inference.utils import TextCleaner
+from src.inference.resume_ranking import ResumeRanker
+from src.inference.utils import TextCleaner
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
