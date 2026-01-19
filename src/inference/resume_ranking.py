@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from traning.feature_extraction import FeatureExtractor
+from src.training.feature_extraction import FeatureExtractor
 from inference.utils import TextCleaner
 from src.config import Config
 
