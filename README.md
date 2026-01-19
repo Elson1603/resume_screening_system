@@ -39,9 +39,7 @@
 
 The **AI-Powered Resume Screening System** is an intelligent solution designed to revolutionize the recruitment process. Using advanced Natural Language Processing (NLP) and Machine Learning techniques, this system automatically analyzes, ranks, and shortlists candidates based on job requirements.
 
-### 🎥 Demo
 
-![Demo GIF](https://via.placeholder.com/800x400/4A90E2/FFFFFF?text=Resume+Screening+System+Demo)
 
 > *Upload resumes, define job requirements, and get ranked candidates in seconds!*
 
@@ -522,7 +520,7 @@ If you find this project useful, please consider:
 
 <div align="center">
 
-**Made with ❤️ by Elson1603**
+
 
 [⬆ Back to Top](#-ai-powered-resume-screening-system)
 
